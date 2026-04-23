@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propuesta Solar VIP | Eleclima Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azul-dark: #0f172a;
+            --azul-medio: #1e293b;
+            --azul-acento: #3b82f6;
+            --verde-lima: #22c55e;
+            --blanco: #ffffff;
+            --gris-frio: #f8fafc;
+            --texto-suave: #64748b;
+        }
+
+        body { font-family: 'Outfit', sans-serif; margin: 0; background: var(--azul-dark); display: flex; color: var(--blanco); height: 100vh; overflow: hidden; }
+
+        /* PANEL DE CONTROL */
+        #config-panel {
+            width: 400px; background: rgba(15, 23, 42, 0.95); padding: 25px;
+            height: 100vh; overflow-y: auto; border-right: 2px solid var(--azul-acento); box-sizing: border-box;
+        }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .field { margin-bottom: 10px; }
+        .field.full { grid-column: span 2; }
+        label { display: block; font-size: 0.6rem; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; font-weight: 700; }
+        input, select { width: 100%; padding: 10px; background: #1e293b; border: 1px solid #334155; color: white; border-radius: 6px; font-size: 0.85rem; }
+        .btn-pdf { width: 100%; background: linear-gradient(135deg, var(--azul-acento), var(--verde-lima)); color: white; padding: 16px; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* PDF PREVIEW */
+        #proposal-preview { flex-grow: 1; padding: 40px; overflow-y: auto; background: #1e293b; display: flex; justify-content: center; }
+        
+        #pdf-content { 
+            width: 800px; 
+            background: var(--blanco); 
+            height: auto; 
+            min-height: 1600px; /* Aumentado para soportar los nuevos espacios */
+            color: var(--azul-dark); 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+        }
+
+        /* HEADER */
+        .header-visual {
+            height: 220px; background: linear-gradient(135deg, var(--azul-dark) 0%, var(--azul-medio) 100%);
+            padding: 40px 60px; color: white; position: relative; display: flex; flex-direction: column; justify-content: center;
+        }
+        .header-visual h1 { font-size: 3rem; margin: 5px 0; font-weight: 800; line-height: 1; }
+        .tagline { color: var(--verde-lima); font-weight: 700; letter-spacing: 4px; text-transform: uppercase; font-size: 0.85rem; margin-bottom: 10px; }
+        .brand-logo-top { position: absolute; top: 40px; right: 60px; width: 180px; height: auto; filter: brightness(0) invert(1); }
+
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 0 60px; margin-top: -40px; position: relative; z-index: 10; }
+        .stat-card { background: white; padding: 25px 15px; border-radius: 20px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border-bottom: 5px solid var(--verde-lima); }
+        .stat-card span { display: block; font-size: 0.65rem; color: var(--texto-suave); text-transform: uppercase; font-weight: 800; margin-bottom: 5px; }
+        .stat-card strong { font-size: 1.5rem; color: var(--azul-dark); display: block; }
+
+        /* SECCIONES EQUIPOS */
+        .section-title { padding: 40px 60px 15px; font-size: 1.1rem; font-weight: 800; text-transform: uppercase; color: var(--azul-acento); letter-spacing: 1px; }
+        
+        .equip-list { padding: 0 60px; display: flex; flex-direction: column; gap: 15px; }
+        .equip-row { 
+            display: flex; background: var(--gris-frio); border-radius: 24px; 
+            overflow: hidden; border: 1px solid #e2e8f0; height: 180px; align-items: stretch;
+        }
+        
+        .equip-img-box { 
+            width: 200px; background: white; 
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+            border-right: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        .equip-img-box img { max-width: 160px; max-height: 120px; object-fit: contain; }
+        
+        .equip-text { padding: 15px 25px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .equip-text h3 { margin: 0; font-size: 0.7rem; color: var(--azul-acento); text-transform: uppercase; font-weight: 800; letter-spacing: 1.5px; }
+        .equip-text p.equip-name { margin: 3px 0 6px; font-size: 1.1rem; font-weight: 800; color: var(--azul-dark); }
+        
+        .desc-container { display: flex; flex-direction: column; gap: 4px; }
+        .desc-item { display: flex; align-items: flex-start; gap: 8px; font-size: 0.75rem; color: #475569; line-height: 1.3; }
+        .desc-item b { color: var(--verde-lima); }
+
+        /* LINEA 1 SOLICITADA */
+        .spacer-meter { margin-bottom: 160px !important; }
+
+        /* LINEA 2 SOLICITADA: Margen inferior de 500px */
+        .legal-notice { 
+            margin: 5px 60px 500px; 
+            padding: 15px 0; 
+            border-top: 1px solid #e2e8f0; 
+            font-size: 0.75rem; 
+            color: var(--texto-suave); 
+            font-style: italic; 
+            line-height: 1.5; 
+        }
+
+        /* FOOTER & PROCESO */
+        .process-banner { margin: 25px 60px 15px; padding: 20px; background: var(--azul-dark); border-radius: 25px; color: white; display: flex; justify-content: space-around; text-align: center; }
+        .step b { color: var(--verde-lima); font-size: 0.7rem; display: block; margin-bottom: 5px; letter-spacing: 2px; }
+        .step p { margin: 0; font-size: 0.95rem; font-weight: 600; }
+
+        .footer-premium { 
+            padding: 40px 60px; 
+            background: var(--gris-frio); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-top: 1px solid #e2e8f0; 
+            margin-top: auto;
+        }
+        .brand-logo-bot { width: 140px; height: auto; }
+    </style>
+</head>
+<body>
+
+    <div id="config-panel">
+        <div class="logo-container" style="background:white; padding:15px; border-radius:12px; margin-bottom:25px; text-align:center; border: 2px solid var(--azul-acento);">
+            <img src="https://i.imgur.com/ENvlG4v.png" style="width: 150px; height: auto;">
+        </div>
+        <div class="grid-inputs">
+            <div class="field full"><label>Cliente</label><input type="text" id="in-cliente" placeholder="Nombre completo" oninput="update()"></div>
+            <div class="field"><label>Inversor</label>
+                <select id="in-inv-brand" onchange="update()">
+                    <option value="Huawei">Huawei SUN2000</option>
+                    <option value="SigenStor">SigenStor AI</option>
+                </select>
+            </div>
+            <div class="field"><label>Potencia</label><input type="text" id="in-inv-power" value="5kW" oninput="update()"></div>
+            <div class="field"><label>Placas</label>
+                <select id="in-panel-brand" onchange="update()">
+                    <option value="DMEGC">DMEGC Solar</option>
+                    <option value="Sigen">Sigen Solar</option>
+                </select>
+            </div>
+            <div class="field"><label>Nº Placas</label><input type="number" id="in-panel-qty" value="12" oninput="update()"></div>
+            <div class="field"><label>Meter</label>
+                <select id="in-meter-brand" onchange="update()">
+                    <option value="Huawei">Huawei</option>
+                    <option value="Sigen">Sigen</option>
+                </select>
+            </div>
+            <div class="field"><label>Estructura</label>
+                <select id="in-struct-brand" onchange="update()">
+                    <option value="Coplanar">Coplanar</option>
+                    <option value="SB10">Solar Bloc 10°</option>
+                    <option value="SB15">Solar Bloc 15°</option>
+                    <option value="SB30">Solar Bloc 30°</option>
+                    <option value="SB35">Solar Bloc 35°</option>
+                </select>
+            </div>
+            <div class="field"><label>Producción</label><input type="text" id="in-prod" value="7.200" oninput="update()"></div>
+            <div class="field"><label>Ahorro %</label><input type="text" id="in-ahorro" value="82%" oninput="update()"></div>
+            <div class="field full"><label>Amortización</label><input type="text" id="in-payback" value="3.8 Años" oninput="update()"></div>
+        </div>
+        <button class="btn-pdf" onclick="generatePDF()">GENERAR PROPUESTA </button>
+    </div>
+
+    <div id="proposal-preview">
+        <div id="pdf-content">
+            <div class="header-visual">
+                <img src="https://i.imgur.com/ENvlG4v.png" class="brand-logo-top">
+                <span class="tagline">Ingeniería Fotovoltaica</span>
+                <h1 id="out-cliente">Nombre del Cliente</h1>
+                <p style="opacity: 0.9; font-weight: 300; font-size: 1.1rem;">Estudio de viabilidad técnica y energética</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card"><span>Energía Estimada</span><strong id="out-prod">7.200 kWh</strong></div>
+                <div class="stat-card"><span>Independencia</span><strong id="out-ahorro" style="color:var(--verde-lima)">82%</strong></div>
+                <div class="stat-card"><span>Amortización</span><strong id="out-payback">3.8 Años</strong></div>
+                <div class="stat-card"><span>Garantía TOTAL</span><strong>25 Años</strong></div>
+            </div>
+
+            <div class="section-title">Tecnología Premium Configurada</div>
+
+            <div class="equip-list">
+                <div class="equip-row">
+                    <div class="equip-img-box"><img id="img-inv" src="https://i.imgur.com/mWdsokZ.png"></div>
+                    <div class="equip-text">
+                        <h3>Gestión de Energía</h3>
+                        <p id="out-inv" class="equip-name">Huawei SUN2000 5kW</p>
+                        <div class="desc-container" id="desc-inv">
+                            <div class="desc-item"><b>✓</b> El cerebro de la instalación; tecnología híbrida preparada para baterías.</div>
+                            <div class="desc-item"><b>✓</b> Inteligencia artificial para detección de fallos y máxima seguridad.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="equip-row">
+                    <div class="equip-img-box"><img id="img-panel" src="https://i.imgur.com/DQlW6mF.png"></div>
+                    <div class="equip-text">
+                        <h3>Unidades de Generación</h3>
+                        <p id="out-panels" class="equip-name">12x DMEGC Solar 450W</p>
+                        <div class="desc-container" id="desc-panel">
+                            <div class="desc-item"><b>✓</b> Células de alta eficiencia con rendimiento superior en días nublados.</div>
+                            <div class="desc-item"><b>✓</b> Estética Full Black con resistencia extrema a la degradación.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="equip-row spacer-meter">
+                    <div class="equip-img-box"><img id="img-meter" src="https://i.imgur.com/SjkC99S.png"></div>
+                    <div class="equip-text">
+                        <h3>Monitorización Precisa</h3>
+                        <p id="out-meter" class="equip-name">Huawei Smart Power Sensor</p>
+                        <div class="desc-container" id="desc-meter">
+                            <div class="desc-item"><b>✓</b> Control total de tu consumo y producción en tiempo real desde el móvil.</div>
+                            <div class="desc-item"><b>✓</b> Permite el vertido cero o la gestión inteligente de excedentes.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="equip-row">
+                    <div class="equip-img-box"><img id="img-struct" src="https://i.imgur.com/a19twUL.png"></div>
+                    <div class="equip-text">
+                        <h3>Soporte Estructural</h3>
+                        <p id="out-struct" class="equip-name">Estructura Coplanar Premium</p>
+                        <div class="desc-container" id="desc-struct">
+                            <div class="desc-item"><b>✓</b> Aluminio anodizado de alta resistencia sin perforaciones críticas.</div>
+                            <div class="desc-item"><b>✓</b> Diseño aerodinámico que garantiza la máxima fijación y durabilidad.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="process-banner">
+                <div class="step"><b>DISEÑO</b><p>Ingeniería</p></div>
+                <div class="step"><b>MONTAJE</b><p>Instalación</p></div>
+                <div class="step"><b>ACTIVACIÓN</b><p>Ahorro Inmediato</p></div>
+            </div>
+
+            <div class="legal-notice">
+                * Esta propuesta tiene una <b>vigencia de 30 días</b> a partir de su emisión. Los datos de ahorro y producción corresponden a un <b>estudio técnico aproximado</b> y pueden variar según condiciones finales de instalación, orientación real y hábitos de consumo del usuario.
+            </div>
+
+            <div class="footer-premium">
+                <div>
+                    <img src="https://i.imgur.com/ENvlG4v.png" class="brand-logo-bot">
+                </div>
+                <div style="text-align: right; font-size: 0.85rem; color: var(--texto-suave); font-weight: 600;">
+                    www.eleclima.com<br>renovables@eleclima.com
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const imagenes = {
+            inv: { "Huawei": "https://i.imgur.com/mWdsokZ.png", "SigenStor": "https://i.imgur.com/TGHyHL6.png" },
+            panels: { "DMEGC": "https://i.imgur.com/DQlW6mF.png", "Sigen": "https://i.imgur.com/3Axf7lb.png" },
+            meters: { "Huawei": "https://i.imgur.com/SjkC99S.png", "Sigen": "https://i.imgur.com/SjkC99S.png" },
+            structs: { 
+                "Coplanar": "https://i.imgur.com/a19twUL.png", "SB10": "https://i.imgur.com/KdfL30k.png",
+                "SB15": "https://i.imgur.com/r5tRP6P.png", "SB30": "https://i.imgur.com/r5tRP6P.png", "SB35": "https://i.imgur.com/r5tRP6P.png"
+            }
+        };
+
+        const textos = {
+            inv: {
+                "Huawei": ["El cerebro de la instalación; tecnología híbrida preparada para baterías.", "Inteligencia artificial para detección de fallos y máxima seguridad."],
+                "SigenStor": ["Sistema 5-en-1 ultra integrado con IA optimizada.", "Diseño revolucionario que maximiza la eficiencia energética total."]
+            },
+            panels: {
+                "DMEGC": ["Células de alta eficiencia con rendimiento superior en días nublados.", "Estética Full Black con resistencia extrema a la degradación."],
+                "Sigen": ["Panel de última generación con máxima potencia por metro cuadrado.", "Tecnología avanzada para captación solar en ángulos bajos."]
+            },
+            meters: {
+                "Huawei": ["Control total de tu consumo y producción en tiempo real desde el móvil.", "Permite el vertido cero o la gestión inteligente de excedentes."],
+                "Sigen": ["Medición de ultra precisión integrada en el ecosistema Sigen.", "Análisis inteligente de flujos para optimizar el ahorro diario."]
+            },
+            structs: {
+                "Coplanar": ["Aluminio anodizado de alta resistencia sin perforaciones críticas.", "Diseño aerodinámico que garantiza la máxima fijación y durabilidad."],
+                "SB": ["Soporte de hormigón técnico que evita perforaciones en cubierta plana.", "Inclinación optimizada para captación máxima según latitud."]
+            }
+        };
+
+        function update() {
+            const cliente = document.getElementById('in-cliente').value || "Nombre del Cliente";
+            const invM = document.getElementById('in-inv-brand').value;
+            const panM = document.getElementById('in-panel-brand').value;
+            const metM = document.getElementById('in-meter-brand').value;
+            const strM = document.getElementById('in-struct-brand').value;
+            
+            document.getElementById('out-cliente').innerText = cliente;
+            document.getElementById('out-inv').innerText = `${invM} ${document.getElementById('in-inv-power').value}`;
+            document.getElementById('out-panels').innerText = `${document.getElementById('in-panel-qty').value}x ${panM} Solar`;
+            document.getElementById('out-meter').innerText = metM + " Smart Meter";
+            
+            const structMap = {"Coplanar": "Coplanar Premium", "SB10": "Solar Bloc 10°", "SB15": "Solar Bloc 15°", "SB30": "Solar Bloc 30°", "SB35": "Solar Bloc 35°"};
+            document.getElementById('out-struct').innerText = `Estructura ${structMap[strM]}`;
+
+            document.getElementById('img-inv').src = imagenes.inv[invM];
+            document.getElementById('img-panel').src = imagenes.panels[panM];
+            document.getElementById('img-meter').src = imagenes.meters[metM];
+            document.getElementById('img-struct').src = imagenes.structs[strM];
+
+            updateDesc('desc-inv', textos.inv[invM]);
+            updateDesc('desc-panel', textos.panels[panM]);
+            updateDesc('desc-meter', textos.meters[metM]);
+            updateDesc('desc-struct', strM === "Coplanar" ? textos.structs.Coplanar : textos.structs.SB);
+
+            document.getElementById('out-prod').innerText = document.getElementById('in-prod').value + " kWh";
+            document.getElementById('out-ahorro').innerText = document.getElementById('in-ahorro').value;
+            document.getElementById('out-payback').innerText = document.getElementById('in-payback').value;
+        }
+
+        function updateDesc(id, arr) {
+            const container = document.getElementById(id);
+            container.innerHTML = `<div class="desc-item"><b>✓</b> ${arr[0]}</div><div class="desc-item"><b>✓</b> ${arr[1]}</div>`;
+        }
+
+        function generatePDF() {
+            const element = document.getElementById('pdf-content');
+            const cli = document.getElementById('in-cliente').value || 'Cliente';
+            const opt = {
+                margin: 0,
+                filename: `Propuesta_Eleclima_${cli}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>
