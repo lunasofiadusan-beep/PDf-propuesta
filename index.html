@@ -128,7 +128,7 @@
             <div class="field"><label>Inversor</label>
                 <select id="in-inv-brand" onchange="update()">
                     <option value="Huawei">Huawei SUN2000</option>
-                    <option value="SigenStor">SigenStor AI</option>
+                    <option value="SigenEnergy">SigenEnergy</option>
                 </select>
             </div>
             <div class="field"><label>Potencia</label><input type="text" id="in-inv-power" value="5kW" oninput="update()"></div>
@@ -252,7 +252,7 @@
 
     <script>
         const imagenes = {
-            inv: { "Huawei": "https://i.imgur.com/mWdsokZ.png", "SigenStor": "https://i.imgur.com/TGHyHL6.png" },
+            inv: { "Huawei": "https://i.imgur.com/mWdsokZ.png", "SigenEnergy": "https://i.imgur.com/TGHyHL6.png" },
             panels: { "DMEGC": "https://i.imgur.com/DQlW6mF.png", "Sigen": "https://i.imgur.com/3Axf7lb.png" },
             meters: { "Huawei": "https://i.imgur.com/SjkC99S.png", "Sigen": "https://i.imgur.com/SjkC99S.png" },
             structs: { 
@@ -264,11 +264,11 @@
         const textos = {
             inv: {
                 "Huawei": ["El cerebro de la instalación; tecnología híbrida preparada para baterías.", "Inteligencia artificial para detección de fallos y máxima seguridad."],
-                "SigenStor": ["Sistema 5-en-1 ultra integrado con IA optimizada.", "Diseño revolucionario que maximiza la eficiencia energética total."]
+                "SigenEnergy": ["Sistema 5-en-1 ultra integrado con IA optimizada.", "Diseño revolucionario que maximiza la eficiencia energética total."]
             },
             panels: {
                 "DMEGC": ["Células de alta eficiencia con rendimiento superior en días nublados.", "Estética Full Black con resistencia extrema a la degradación."],
-                "Sigen": ["Panel de última generación con máxima potencia por metro cuadrado.", "Tecnología avanzada para captación solar en ángulos bajos."]
+                "Sigen": ["Panel de última generación con máxima potencia por metro cuadrado.", "Tecnología avanzada para captación solar en días nublados."]
             },
             meters: {
                 "Huawei": ["Control total de tu consumo y producción en tiempo real desde el móvil.", "Permite el vertido cero o la gestión inteligente de excedentes."],
